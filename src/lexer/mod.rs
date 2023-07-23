@@ -1,7 +1,6 @@
 //macro
 #![allow(dead_code)]
-use regex::Regex;
-use std::{error::Error, thread::current};
+use std::error::Error;
 
 #[derive(Debug, PartialEq)]
 pub enum Token {
