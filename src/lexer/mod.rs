@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 use std::error::Error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     // Identifiers + literals
     IDENT(String),
@@ -10,6 +10,14 @@ pub enum Token {
     // Operators
     ASSIGN,
     PLUS,
+    MINUS,
+    BANG,
+    ASTERISK,
+    SLASH,
+    LT,
+    GT,
+    EQ,
+    NOT_EQ,
     // Delimiters
     COMMA,
     SEMICOLON,
@@ -20,6 +28,11 @@ pub enum Token {
     // Keywords
     FUNCTION,
     LET,
+    TRUE,
+    FALSE,
+    IF,
+    ELSE,
+    RETURN,
     //None match
     ILLEGAL,
     EOF,
@@ -47,8 +60,30 @@ impl Lexer {
     pub fn next_token(&mut self) -> Result<Token, Box<dyn Error>> {
         self.skip_whitespace();
         let token = match self.ch {
-            b'=' => Token::ASSIGN,
+            //Operators
+            b'=' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    Token::EQ
+                } else {
+                    Token::ASSIGN
+                }
+            }
             b'+' => Token::PLUS,
+            b'-' => Token::MINUS,
+            b'!' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    Token::NOT_EQ
+                } else {
+                    Token::BANG
+                }
+            }
+            b'*' => Token::ASTERISK,
+            b'/' => Token::SLASH,
+            b'<' => Token::LT,
+            b'>' => Token::GT,
+            //
             b',' => Token::COMMA,
             b';' => Token::SEMICOLON,
             b'(' => Token::LPAREN,
@@ -60,6 +95,11 @@ impl Lexer {
                 return Ok(match id.as_str() {
                     "fn" => Token::FUNCTION,
                     "let" => Token::LET,
+                    "true" => Token::TRUE,
+                    "false" => Token::FALSE,
+                    "if" => Token::IF,
+                    "else" => Token::ELSE,
+                    "return" => Token::RETURN,
                     //change to variable in the future
                     _ => Token::IDENT(id),
                 });
@@ -70,6 +110,13 @@ impl Lexer {
         };
         self.read_char();
         Ok(token)
+    }
+
+    fn peek_char(&self) -> u8 {
+        if self.next >= self.input.len() {
+            return 0;
+        }
+        self.input[self.next]
     }
 
     fn read_identifier(&mut self) -> String {
@@ -116,11 +163,22 @@ mod tests {
     #[test]
     fn TestNextToken() -> Result<(), Box<dyn Error>> {
         let input = r#"let five = 5;
-let ten = 10;
-let add = fn(x, y) {
-x + y;
-};
-let result = add(five, ten);"#;
+        let ten = 10;
+        let add = fn(x, y) {
+        x + y;
+        };
+        let result = add(five, ten);
+        !-/*5;
+        5 < 10 > 5;
+        if (5 < 10) {
+            return true;
+        } else {
+            return false;
+        }
+
+        10 == 10;
+        9!=10;
+        "#;
 
         let exp = vec![
             Token::LET,
@@ -158,6 +216,43 @@ let result = add(five, ten);"#;
             Token::COMMA,
             Token::IDENT(String::from("ten")),
             Token::RPAREN,
+            Token::SEMICOLON,
+            Token::BANG,
+            Token::MINUS,
+            Token::SLASH,
+            Token::ASTERISK,
+            Token::INT("5".to_string()),
+            Token::SEMICOLON,
+            Token::INT("5".to_string()),
+            Token::LT,
+            Token::INT("10".to_string()),
+            Token::GT,
+            Token::INT("5".to_string()),
+            Token::SEMICOLON,
+            Token::IF,
+            Token::LPAREN,
+            Token::INT("5".to_string()),
+            Token::LT,
+            Token::INT("10".to_string()),
+            Token::RPAREN,
+            Token::LBRACE,
+            Token::RETURN,
+            Token::TRUE,
+            Token::SEMICOLON,
+            Token::RBRACE,
+            Token::ELSE,
+            Token::LBRACE,
+            Token::RETURN,
+            Token::FALSE,
+            Token::SEMICOLON,
+            Token::RBRACE,
+            Token::INT("10".to_string()),
+            Token::EQ,
+            Token::INT("10".to_string()),
+            Token::SEMICOLON,
+            Token::INT("9".to_string()),
+            Token::NOT_EQ,
+            Token::INT("10".to_string()),
             Token::SEMICOLON,
             Token::EOF,
         ];

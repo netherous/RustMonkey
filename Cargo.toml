@@ -6,6 +6,3 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-poloto = "19.1.2"
-regex = "1.9.1"
-tagu = "0.1.6"
