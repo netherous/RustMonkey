@@ -1,5 +1,4 @@
 //macro
-#![allow(dead_code)]
 use std::error::Error;
 
 #[derive(Debug, PartialEq, Clone)]

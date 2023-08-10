@@ -1,7 +1,5 @@
-use std::{
-    error::Error,
-    io::{stdin, stdout, Stdin},
-};
+#![allow(non_snake_case)]
+use std::io::{stdin, stdout};
 
 use RustMonkey::repl;
 // PIPE me to a file!
